@@ -66,7 +66,8 @@ public class ArmTemplateBuilder {
             model.put("region", cloudContext.getLocation().getRegion().value());
             model.put("subnet1Prefix", network.getSubnet().getCidr());
             model.put("groups", armStack.getGroups());
-            model.put("securities", new ArmSecurityView(cloudStack.getCloudSecurity()));
+            model.put("igs", armStack.getInstanceGroups());
+            model.put("securities", new ArmSecurityView(cloudStack.getGroups()).getPorts());
             model.put("corecustomData", base64EncodedUserData(cloudStack.getImage().getUserData(InstanceGroupType.CORE)));
             model.put("gatewaycustomData", base64EncodedUserData(cloudStack.getImage().getUserData(InstanceGroupType.GATEWAY)));
             model.put("disablePasswordAuthentication", !armCredentialView.passwordAuthenticationRequired());

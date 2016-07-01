@@ -95,14 +95,20 @@
       "osDiskVhdName" : "[concat('https://',parameters('userImageStorageAccountName'),'.blob.core.windows.net/',parameters('userDataStorageContainerName'),'/',parameters('vmNamePrefix'),'osDisk')]",
       <#if existingVPC>
       "vnetID": "[resourceId(parameters('resourceGroupName'),'Microsoft.Network/virtualNetworks',parameters('existingVNETName'))]",
-      "subnet1Ref": "[concat(variables('vnetID'),'/subnets/',parameters('existingSubnetName'))]",
+      <#list igs as group>
+      "subnet${group?replace('_', '')}Ref": "[concat(variables('vnetID'),'/subnets/',parameters('existingSubnetName'))]",
+      </#list>
       <#else>
       "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkNamePrefix'))]",
-      "subnet1Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet1Name'))]",
+      <#list igs as group>
+      "subnet${group?replace('_', '')}Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet1Name'),'${group?replace('_', '')}')]",
+      </#list>
       </#if>
       "staticIpRef": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('gatewaystaticipname'))]",
       "ilbBackendAddressPoolName": "${stackname}bapn",
-      "secGroupName": "${stackname}secgname",
+      <#list igs as group>
+      "${group?replace('_', '')}secGroupName": "${group?replace('_', '')}secgname",
+      </#list>
       "lbID": "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName'))]",
       "sshIPConfig": "[concat(variables('lbID'),'/frontendIPConfigurations/', parameters('sshIPConfigName'))]",
       "ilbBackendAddressPoolID": "[concat(variables('lbID'),'/backendAddressPools/', variables('ilbBackendAddressPoolName'))]",
@@ -114,7 +120,10 @@
               "apiVersion": "2015-05-01-preview",
               "type": "Microsoft.Network/virtualNetworks",
               "dependsOn": [
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('secGroupName'))]"
+              <#list igs as group>
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('${group?replace('_', '')}secGroupName'))]"
+                <#if (group_index + 1) != igs?size>,</#if>
+                                    </#list>
               ],
               "name": "[parameters('virtualNetworkNamePrefix')]",
               "location": "[parameters('region')]",
@@ -125,22 +134,26 @@
                       ]
                   },
                   "subnets": [
+                    <#list igs as group>
                       {
-                          "name": "[parameters('subnet1Name')]",
+                          "name": "[concat(parameters('subnet1Name'), '${group?replace('_', '')}')]",
                           "properties": {
                               "addressPrefix": "[parameters('subnet1Prefix')]",
                               "networkSecurityGroup": {
-                                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('secGroupName'))]"
+                                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('${group?replace('_', '')}secGroupName'))]"
                               }
                           }
                       }
+                      <#if (group_index + 1) != igs?size>,</#if>
+                    </#list>
                   ]
               }
           },
+           <#list igs as group>
           {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "[variables('secGroupName')]",
+            "name": "[variables('${group?replace('_', '')}secGroupName')]",
             "location": "[parameters('region')]",
             "properties": {
             "securityRules": [
@@ -157,7 +170,7 @@
                         "direction": "Outbound"
                     }
                 },
-                <#list securities.ports as port>
+                <#list securities[group] as port>
                 {
                     "name": "endpoint${port_index}inr",
                     "properties": {
@@ -170,11 +183,12 @@
                         "priority": ${port_index + 102},
                         "direction": "Inbound"
                     }
-                }<#if (port_index + 1) != securities.ports?size>,</#if>
+                }<#if (port_index + 1) != securities[group]?size>,</#if>
                 </#list>
                 ]
             }
           },
+          </#list>
           </#if>
           <#list groups?keys as instanceGroup>
           <#list groups[instanceGroup] as instance>
@@ -213,7 +227,7 @@
                         }
                       ],
                       "inboundNatRules": [
-                      <#list securities.ports as port>
+                      <#list securities[instance.groupName] as port>
                         {
                           "name": "endpoint${port_index}inr",
                           "properties": {
@@ -225,7 +239,7 @@
                             "backendPort": "${port.port}",
                             "enableFloatingIP": false
                           }
-                        }<#if (port_index + 1) != securities.ports?size>,</#if>
+                        }<#if (port_index + 1) != securities[instance.groupName]?size>,</#if>
                         </#list>
                       ]
                     }
@@ -271,7 +285,7 @@
                                 },
                                 </#if>
                                 "subnet": {
-                                    "id": "[variables('subnet1Ref')]"
+                                    "id": "[concat(variables('subnet1Ref'), '${instance.groupName?replace('_', '')}')]"
                                 }
                                 <#if instanceGroup == "GATEWAY">
                                 ,"loadBalancerBackendAddressPools": [
@@ -280,10 +294,10 @@
                                     }
                                 ],
                                 "loadBalancerInboundNatRules": [
-                                <#list securities.ports as port>
+                                <#list securities[instance.groupName] as port>
                                     {
                                         "id": "[concat(variables('lbID'),'/inboundNatRules/', 'endpoint${port_index}inr')]"
-                                    }<#if (port_index + 1) != securities.ports?size>,</#if>
+                                    }<#if (port_index + 1) != securities[instance.groupName]?size>,</#if>
                                 </#list>
                                 ]
                                 </#if>
