@@ -51,7 +51,6 @@ public class ShellContext {
     private Map<Long, String> networksByProvider = new HashMap<>();
     private Map<Long, String> securityGroups = new HashMap<>();
     private Long activeNetworkId;
-    private Long activeSecurityGroupId;
     private FileSystemType fileSystemType;
     private Map<String, Object> fileSystemParameters = new HashMap<>();
     private Boolean defaultFileSystem;
@@ -191,8 +190,14 @@ public class ShellContext {
             instanceGroups.put(
                     instanceGroup.getGroup(),
                     new InstanceGroupEntry(
+<<<<<<< HEAD
                             instanceGroup.getTemplateId(),
                             instanceGroup.getNodeCount(),
+=======
+                            Long.valueOf(instanceGroup.getTemplateId()),
+                            Long.valueOf(instanceGroup.getSecurityGroupId()),
+                            Integer.valueOf(instanceGroup.getNodeCount()),
+>>>>>>> fixed azure template
                             instanceGroup.getType().name()
                     )
             );
@@ -449,14 +454,6 @@ public class ShellContext {
 
     public void setActiveNetworkId(Long activeNetworkId) {
         this.activeNetworkId = activeNetworkId;
-    }
-
-    public Long getActiveSecurityGroupId() {
-        return activeSecurityGroupId;
-    }
-
-    public void setActiveSecurityGroupId(Long id) {
-        this.activeSecurityGroupId = id;
     }
 
     /**

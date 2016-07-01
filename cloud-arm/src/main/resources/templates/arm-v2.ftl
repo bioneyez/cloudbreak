@@ -130,7 +130,10 @@
               "properties": {
                   "addressSpace": {
                       "addressPrefixes": [
-                          "[parameters('subnet1Prefix')]"
+                          <#list igs as group>
+                          "${ads[group]}"
+                          <#if (group_index + 1) != igs?size>,</#if>
+                                              </#list>
                       ]
                   },
                   "subnets": [
@@ -138,7 +141,7 @@
                       {
                           "name": "[concat(parameters('subnet1Name'), '${group?replace('_', '')}')]",
                           "properties": {
-                              "addressPrefix": "[parameters('subnet1Prefix')]",
+                              "addressPrefix": "${ads[group]}",
                               "networkSecurityGroup": {
                                   "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('${group?replace('_', '')}secGroupName'))]"
                               }
@@ -285,7 +288,7 @@
                                 },
                                 </#if>
                                 "subnet": {
-                                    "id": "[concat(variables('subnet1Ref'), '${instance.groupName?replace('_', '')}')]"
+                                    "id": "[variables('subnet${instance.groupName?replace('_', '')}Ref')]"
                                 }
                                 <#if instanceGroup == "GATEWAY">
                                 ,"loadBalancerBackendAddressPools": [
