@@ -58,7 +58,7 @@ public class ArmTemplateBuilder {
             String rootDiskStorage = armStorage.getImageStorageName(armCredentialView, cloudContext,
                     armStorage.getPersistentStorageName(cloudStack.getParameters()),
                     armStorage.getArmAttachedStorageOption(cloudStack.getParameters()));
-            ArmSecurityView armSecurityView = new ArmSecurityView(cloudStack.getGroups(), network.getSubnet());
+            ArmSecurityView armSecurityView = new ArmSecurityView(cloudStack.getGroups());
 
             model.put("storage_account_name", rootDiskStorage);
             model.put("image_storage_container_name", ArmStorage.IMAGES);
@@ -69,7 +69,6 @@ public class ArmTemplateBuilder {
             model.put("subnet1Prefix", network.getSubnet().getCidr());
             model.put("groups", armStack.getGroups());
             model.put("igs", armStack.getInstanceGroups());
-            model.put("ads", armSecurityView.getAds());
             model.put("securities", armSecurityView.getPorts());
             model.put("corecustomData", base64EncodedUserData(cloudStack.getImage().getUserData(InstanceGroupType.CORE)));
             model.put("gatewaycustomData", base64EncodedUserData(cloudStack.getImage().getUserData(InstanceGroupType.GATEWAY)));

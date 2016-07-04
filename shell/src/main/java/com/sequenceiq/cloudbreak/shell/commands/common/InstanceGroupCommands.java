@@ -67,7 +67,7 @@ public class InstanceGroupCommands implements CommandMarker {
             }
             String securityGroupId = null;
             if (instanceGroupSecurityGroupId != null) {
-                templateId = instanceGroupSecurityGroupId.getName();
+                securityGroupId = instanceGroupSecurityGroupId.getName();
             } else if (instanceGroupSecurityGroupName != null) {
                 SecurityGroupJson aPublic = shellContext.cloudbreakClient().securityGroupEndpoint().getPublic(instanceGroupSecurityGroupName.getName());
                 if (aPublic != null) {
@@ -93,9 +93,11 @@ public class InstanceGroupCommands implements CommandMarker {
                     if (nodeCount != 1) {
                         return "Allowed node count for Ambari server: 1";
                     }
-                    shellContext.putInstanceGroup(instanceGroup.getName(), new InstanceGroupEntry(parsedTemplateId, parsedsecurityGroupId, nodeCount, "GATEWAY"));
+                    shellContext.putInstanceGroup(instanceGroup.getName(),
+                            new InstanceGroupEntry(parsedTemplateId, parsedsecurityGroupId, nodeCount, "GATEWAY"));
                 } else {
-                    shellContext.putInstanceGroup(instanceGroup.getName(), new InstanceGroupEntry(parsedTemplateId, parsedsecurityGroupId, nodeCount, "CORE"));
+                    shellContext.putInstanceGroup(instanceGroup.getName(),
+                            new InstanceGroupEntry(parsedTemplateId, parsedsecurityGroupId, nodeCount, "CORE"));
                 }
                 shellContext.putHostGroup(instanceGroup.getName(), new HostgroupEntry(nodeCount, new HashSet<>()));
                 if (shellContext.getActiveHostGroups().size() == shellContext.getInstanceGroups().size()

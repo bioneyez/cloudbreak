@@ -7,15 +7,12 @@ import java.util.Map;
 
 import com.sequenceiq.cloudbreak.cloud.model.Group;
 import com.sequenceiq.cloudbreak.cloud.model.SecurityRule;
-import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 
 public class ArmSecurityView {
 
     private Map<String, List<ArmPortView>> ports = new HashMap<>();
-    private Map<String, String> ads = new HashMap<>();
 
-    public ArmSecurityView(List<Group> groups, Subnet subnet) {
-        int i = 0;
+    public ArmSecurityView(List<Group> groups) {
         for (Group group : groups) {
             List<ArmPortView> groupPorts = new ArrayList<>();
             for (SecurityRule securityRule : group.getSecurity().getRules()) {
@@ -24,22 +21,11 @@ public class ArmSecurityView {
                 }
             }
             ports.put(group.getName(), groupPorts);
-            ads.put(group.getName(), calculateSubnetAddress(subnet.getCidr(), i));
-            i++;
         }
-    }
-
-    private String calculateSubnetAddress(String cidr, int i) {
-        String tmp[] = cidr.split("\\.");
-        Long changer = Long.valueOf(tmp[2]);
-        return String.format("%s.%s.%s.%s", tmp[0], tmp[1], (changer + i) > 255 ? (changer + i) % 255 : (changer + i), tmp[3].replace("/16", "/24"));
     }
 
     public Map<String, List<ArmPortView>> getPorts() {
         return ports;
     }
 
-    public Map<String, String> getAds() {
-        return ads;
-    }
 }
