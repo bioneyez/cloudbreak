@@ -14,6 +14,7 @@ import com.sequenceiq.cloudbreak.orchestrator.state.ExitCriteriaModel;
 public class OrchestratorBootstrapRunner implements Callable<Boolean> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrchestratorBootstrapRunner.class);
+
     private static final int MAX_RETRY_COUNT = 30;
     private static final int SLEEP_TIME = 5000;
 

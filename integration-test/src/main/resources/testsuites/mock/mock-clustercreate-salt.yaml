@@ -78,6 +78,22 @@ tests:
       - com.sequenceiq.it.cloudbreak.mock.MockStackCreationWithSaltSuccessTest
       - com.sequenceiq.it.cloudbreak.mock.MockClusterCreationWithSaltSuccessTest
 
+
+  - name: upscale
+    parameters:
+      instanceGroup: host_group_slave_1
+      scalingAdjustment: 3
+    classes:
+        - com.sequenceiq.it.cloudbreak.mock.MockScalingTest
+
+
+  - name: downscale
+    parameters:
+      instanceGroup: host_group_slave_1
+      scalingAdjustment: -2
+    classes:
+        - com.sequenceiq.it.cloudbreak.mock.MockScalingTest
+
   - name: stop ssh server
     parameters:
       sshPort: 2020
